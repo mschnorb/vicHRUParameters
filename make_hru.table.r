@@ -26,7 +26,7 @@ make_hru.table <- function(rdem,
   library('sf')
 
   #Internal function to match class pairs to corresponding
-  #entry in classifiction table
+  #entry in classification table
   row.from.class_table <- function(r1,r2,ctbl){
     a <- cbind(values(r1),values(r2))
     apply(a,1,function(x,y){

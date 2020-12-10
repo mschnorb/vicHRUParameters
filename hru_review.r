@@ -24,7 +24,7 @@ summarizeHRU <- function(x){
   d2$AREA_FRAC <- d2$AREA/sum(d2$AREA)
   d2$CUM_AREA_FRAC <- cumsum(d2$AREA_FRAC)
   
-  return(list(d1,d2))
+  return(list(VEG=d1,ELEV=d2))
   
 }
 

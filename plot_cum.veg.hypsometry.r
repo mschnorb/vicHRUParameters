@@ -4,14 +4,14 @@ plot_cum.veg.hypsometry <- function(hru_df){
   
   pckg <- list("ggplot2", "plyr")
   do.call(require, pckg)
+  source("./set_veg_legend.r")
   
   #Set legend properties
   veg_class <- sort(unique(hru_df$CLASS))
   leg <- set_veg_legend(veg_class)
   
   #Normalize area fractions
-  no_cells <- length(unique(hru_df$CELL_ID))
-  hru_df$AREA <- hru_df$AREA/no_cells
+  hru_df$AREA <- hru_df$AREA/sum(hru_df$AREA)
   
   #Calculate cumulative area by vegetation class
   ii <- order(hru_df$CLASS, hru_df$ELEVATION)
@@ -25,7 +25,8 @@ plot_cum.veg.hypsometry <- function(hru_df){
     geom_line(aes(color=factor(CLASS)), size=1) + 
     scale_color_manual("Land Cover", labels = leg$lbl, values=leg$clr) + 
     labs(x="Elevation (m)", y="Cumulative Area Fraction", title="Cumulative Vegetation Hypsometry") +
-    coord_flip()
+    coord_flip() +
+    theme_bw()
   
   return(gplot)
   
