@@ -13,7 +13,7 @@
 # -c, --celldf -  Cell map data frame object
 # -v, --vpfile -  Name of vegetation parameter file [required]
 # -s, --sbfile -  Name of elevation band file [required]
-# -f, --fncfile - Name of R source file for function make_VIC_param() [required]
+# -f, --fncfile - Name of R source file for function make.VIC.param() [required]
 # -g, --glacid -  ID of glacier land cover class [default = 22]
 # -z, --maxz -    Maximum number of elevation bands in band file [default = 20]
 # -m, --minb -    BAND_ID of lowest band (i.e. that which includes sea level)
@@ -77,9 +77,9 @@ if(!is.null(opt$basin)){
   nind <- match(c("name","names","NAME","NAMES","basin","BASIN", "basins","BASINS"),hdrs)
   rind <- which(cell_map[[nind]]==opt$basin)
   if(length(rind)==0) stop(paste("Sub-basin '", opt$basin, "' could not be found in supplied data frame.", sep=""))
-  cind <- match(c("cellid","cell_id","CELLID","CELL_ID"),hdrs)
-  cells <- cell_map$[[cind]][rind]
-  inFrame <- do.call(rbind, lapply(cells, function(x, dfy, ci){dfy[which(dfy$[[ci]]==x),]}, dfy=e[[opt$hrudf]], ci=cind))
+  cind <- match(c("cellid","cell_id","CELLID","CELL_ID"), hdrs)
+  cells <- cell_map[[cind]][rind]
+  inFrame <- do.call(rbind, lapply(cells, function(x, dfy, ci){dfy[which(dfy[[ci]]==x),]}, dfy=e[[opt$hrudf]], ci=cind))
 } else {
   inFrame <- e[[opt$hrudf]]
 }
