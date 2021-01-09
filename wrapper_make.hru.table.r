@@ -9,7 +9,6 @@
 # -b, --bfile - filename of basin polygon shapefile [required]
 # -c, --cfile - filename of VICGL cell-to-basin map text file [optional]
 # -d, --dfile - filename of elevation raster file [required]
-# -f, --fncfile - Name of R source file for function make.hru.table() [required]
 # -o, --outdir - output directory [optional; default is working directory]
 # -r, --rfile - filename of rooting depth table as comma-delimited text file [optional]
 # -s, --sfile - filename of VICGL soil cells polygon shapefile [required]
@@ -39,7 +38,6 @@ option_list <- list(
   make_option(c("-c", "--cfile"), action="store", type="character", help="Filename of VICGL cell-to-basin map text file with 
     fields CELL_ID and NAME [optional]"),
   make_option(c("-d", "--dfile"), action="store", type="character", help="Filename of elevation raster file [required]"),
-  make_option(c("-f", "--fncfile"), action="store", type="character", help="Name of R source file for function make.hru.table() [required]"),
   make_option(c("-o", "--outdir"), action="store", type="character", help="Output directory [default is working directory]"),
   make_option(c("-r", "--rfile"), action="store", type="character", help="Filename of CSV text file with vegetation rooting
     depths with fields CLASS, RTHICK1, RTHICK2, RTHICK3, RFRAC1, RFRAC2 and RFRAC3 [optional]"),
@@ -50,7 +48,6 @@ option_list <- list(
 opt <- parse_args(OptionParser(option_list=option_list))
 if(is.null(opt$bfile))   stop("Missing argument for 'bfile'. Use -h or --help flag for usage.")
 if(is.null(opt$dfile))   stop("Missing argument for 'dfile'. Use -h or --help flag for usage.")
-if(is.null(opt$fncfile)) stop("Missing argument for 'fncfile'. Use -h or --help flag for usage.")
 if(is.null(opt$vfile))   stop("Missing argument for 'vfile'. Use -h or --help flag for usage.")
 if(is.null(opt$sfile))   stop("Missing argument for 'sfile'. Use -h or --help flag for usage.")
 if(is.null(opt$outdir))  opt$outdir <- getwd()
@@ -66,7 +63,7 @@ if(is.null(opt$rfile)) {
 }
 
 #Load/source file(s)
-source(opt$fncfile)
+source("make.hru.table.R")
 
 #Load data
 rdem <- raster(opt$dfile)

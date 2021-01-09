@@ -13,7 +13,6 @@
 # -c, --celldf -  Cell map data frame object
 # -v, --vpfile -  Name of vegetation parameter file [required]
 # -s, --sbfile -  Name of elevation band file [required]
-# -f, --fncfile - Name of R source file for function make.VIC.param() [required]
 # -g, --glacid -  ID of glacier land cover class [default = 22]
 # -z, --maxz -    Maximum number of elevation bands in band file [default = 20]
 # -m, --minb -    BAND_ID of lowest band (i.e. that which includes sea level)
@@ -25,7 +24,7 @@
 # Script uses side-effect of function make.VIC.param() to generate VICGL parameters and write the
 # vegetation and band parameter files. The -S or --save flags can also be used to save the return
 # value of the function make.VIC.param() to an *.RData file. See the documentation for make.VIC.param()
-# for a detailed desription of the function return value. Script uses tryCatch() to print 'result',
+# for a detailed description of the function return value. Script uses tryCatch() to print 'result',
 # which will either be TRUE (if successful), or an error/warning (if not successful).
 #####################################################################################################
 
@@ -39,7 +38,6 @@ option_list <- list(
   make_option(c("-c", "--celldf"),  action="store", type="character", help="Cell map data frame object [required if --basin set]"),
   make_option(c("-v", "--vpfile"),  action="store", type="character", help="Name of output vegetation parameter file [required]"),
   make_option(c("-s", "--sbfile"),  action="store", type="character", help="Name of output elevation band parameter file [required]"),
-  make_option(c("-f", "--fncfile"), action="store", type="character", help="R function(s) source code file [required]"),
   make_option(c("-g", "--glacid"),  action="store", type="integer", default=22, help="ID of glacier landcover class [default is 22]"),
   make_option(c("-z", "--maxz"),    action="store", type="integer", default=20, help="Maximum number of bands for band file [default is 20]"),
   make_option(c("-m", "--minb"),    action="store", type="integer", help="Band ID of lowest elevation band"),
@@ -50,7 +48,6 @@ opt <- parse_args(OptionParser(option_list=option_list))
 if(is.null(opt$dfile))   stop("Missing argument for 'dfile'. Use -h or --help flag for usage.")
 if(is.null(opt$hrudf))   stop("Missing argument for 'hrudf'. Use -h or --help flag for usage.")
 if(is.null(opt$rootdf))  stop("Missing argument for 'rootdf'. Use -h or --help flag for usage.")
-if(is.null(opt$fncfile)) stop("Missing argument for 'fncfile'. Use -h or --help flag for usage.")
 if(is.null(opt$vpfile))  stop("Missing argument for 'vpfile'. Use -h or --help flag for usage.")
 if(is.null(opt$sbfile))  stop("Missing argument for 'sbfile'. Use -h or --help flag for usage.")
 if(!is.null(opt$basin)){
@@ -60,7 +57,7 @@ if(opt$nullg & is.null(opt$minb)) stop("Must specifiy minimum band ID if nullg s
 
 #Load/source file(s)
 load(opt$dfile)
-source(opt$fncfile)
+source("make.VIC.param.R")
 e <- environment()
 
 #Check that all required R objects are present
