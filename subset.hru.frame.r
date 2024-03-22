@@ -7,7 +7,7 @@ subset.hru.frame <- function(basin, cell_map, frame){
   # basin -    character providing name of sub-basin to sub-set
   # cell_map - data frame linking each VIC cell to a sub-basin; must contain fields 'CELL_ID'
   #            and 'NAME'
-  # frame -    master HRU data frame containg cells for 'basin'
+  # frame -    master HRU data frame containing cells for 'basin'
 
   #VALUE: HRU data frame for 'basin'
   

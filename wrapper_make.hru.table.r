@@ -95,5 +95,5 @@ result <- tryCatch({
   #do nothing
 }) #End tryCatch
 
-#Print 'result' - potentially used by calling scripts to test for succesful completion.
+#Print 'result' - potentially used by calling scripts to test for successful completion.
 cat(result, "\n")

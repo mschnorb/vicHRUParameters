@@ -4,8 +4,9 @@ plot_veg.hypsometry <- function(hru_df,
   #Plot area of each vegetation class by elevation band. Plot either for entire
   #study area, by grid cell or by basin (if hru_df contains almalgamated data)
   
-  require("ggplot2")
-  require("plyr")
+  #require("ggplot2")
+  #require("plyr")
+  require(tidyverse)
   source("./set_veg_legend.r")
   
   # Internal function(s) ###
@@ -25,8 +26,9 @@ plot_veg.hypsometry <- function(hru_df,
     cell_area_df <- ddply(hru_df, .(CELL_ID), summarise, CELL_AREA=sum(AREA))
     area_vector <- sapply(hru_df$CELL_ID, find.cell.area, cell_area_df)
     hru_df$AREA_FRAC <- hru_df$AREA/area_vector
+    #hru_df <- hru_df %>% group_by(CELL_ID) %>% mutate(AREA_FRAC=AREA/sum(AREA))
   }
-
+  
   #Normalize cell area fractions
   if (by_basin){
     basins <- unique(hru_df$basin)
@@ -40,13 +42,13 @@ plot_veg.hypsometry <- function(hru_df,
     hru_df$AREA_FRAC <- hru_df$AREA_FRAC/no_cells
   }
   
-  ii <- order(hru_df$CLASS, hru_df$ELEVATION, hru_df$CELL_ID)
+  ii <- order(hru_df$CLASS, hru_df$ELEVATION, hru_df$CELL_ID, decreasing=c(FALSE,FALSE,FALSE), method="radix")
   temp <- hru_df[ii,]
   
   if(by_basin){
       gplot <- 
         ggplot(temp, aes(x=BAND_ID, y=AREA_FRAC)) + 
-        geom_bar(aes(fill=factor(CLASS)), stat="identity") +
+        geom_bar(aes(fill=factor(CLASS)), stat="identity", position = position_stack(reverse = TRUE)) +
         scale_fill_manual(labels = leg$lbl, values=leg$clr) +
         theme_bw() + 
         labs(x="Elevation (m)", y="Area Fraction", fill="Land Cover") +
@@ -54,13 +56,15 @@ plot_veg.hypsometry <- function(hru_df,
         coord_flip()
   } else {
     gplot <- 
-      ggplot(temp, aes(x=BAND_ID, y=AREA_FRAC)) + 
-      geom_bar(aes(fill=factor(CLASS)), stat="identity") +
+      ggplot(temp %>% group_by(BAND_ID, CLASS) %>% summarise(AREA_FRAC=sum(AREA_FRAC)),
+             aes(x=BAND_ID, y=AREA_FRAC)) + 
+      geom_bar(aes(fill=factor(CLASS)), stat="identity", position = position_stack(reverse = TRUE)) +
       scale_fill_manual(labels = leg$lbl, values=leg$clr) +
       theme_bw() + 
       scale_x_continuous(limits=c(NA,NA)) + 
-      labs(x="Elevation (m)", y="Area Fraction", fill="Land Cover", 
-           title="Vegetation Class Hypsometry") +
+      #labs(x="Elevation (m)", y="Area Fraction", fill="Land Cover", 
+      #     title="Vegetation Class Hypsometry") +
+      labs(x="Elevation (m)", y="Area Fraction", fill="Land Cover") +
       coord_flip()    
   }
   

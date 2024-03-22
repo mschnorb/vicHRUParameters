@@ -14,10 +14,15 @@ plot_cum.veg.hypsometry <- function(hru_df){
   hru_df$AREA <- hru_df$AREA/sum(hru_df$AREA)
   
   #Calculate cumulative area by vegetation class
+  #Order df, remove POLY_ID, and take cumsum
   ii <- order(hru_df$CLASS, hru_df$ELEVATION)
-  j <- which(names(hru_df)=="POLY_ID")
-  hru_df <- hru_df[ii,-j]
-  temp_df <- ddply(hru_df, .(CLASS), cumsum) #Order df, remove POLY_ID, and take cumsum
+  if(any(names(hrudf_bccoast)=="POLY_ID")){
+    j <- which(names(hru_df)=="POLY_ID")
+    hru_df <- hru_df[ii,-j]
+  } else {
+    hru_df <- hru_df[ii,]
+  }
+  temp_df <- ddply(hru_df, .(CLASS), cumsum)
   hru_df$CAREA <- temp_df$AREA
 
   #Build ggplot by layers
