@@ -80,9 +80,11 @@ statsHRU <- function(hru_df,
   require("tidyverse")
   
   if (qc) {
-    #Check for elelvation errors
-    hru_df$BAND_ID[which(hru_df$BAND_ID < minBand)] <- minBand
-    hru_df$ELEVATION[which(hru_df$ELEVATION < 0)] <- 0
+    #Check for elevation errors
+    ind <- which(hru_df$BAND_ID < minBand)
+    hru_df$BAND_ID[ind] <- minBand
+    hru_df$ELEVATION[ind] <- 0
+    hru_df$POLY_ID[ind] <- paste(hru_df$CELL_ID[ind], minBand, sep="-")
   }
   
   #Calculate and print statistics

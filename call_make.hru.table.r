@@ -56,7 +56,7 @@ call_make.hru.table <- function(ply_file,
   bpoly <- vect(ply_file)
   spoly <- vect(soil_file)
   if(CELLMAP) cell_map <- read.table(cell_file, header=TRUE, stringsAsFactors=FALSE, sep=",")
-  if(RDEPTH)  root_depth <- read.table(roo_file, header=TRUE, stringsAsFactors=FALSE, sep=",")
+  if(RDEPTH)  root_depth <- read.table(root_file, header=TRUE, stringsAsFactors=FALSE, sep=",")
   if(CELLMAP & RDEPTH) save <- TRUE
 
   #Parameters
