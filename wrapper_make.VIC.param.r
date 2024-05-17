@@ -40,7 +40,7 @@ option_list <- list(
   make_option(c("-s", "--sbfile"),  action="store", type="character", help="Name of output elevation band parameter file [required]"),
   make_option(c("-g", "--glacid"),  action="store", type="integer", default=22, help="ID of glacier landcover class [default is 22]"),
   make_option(c("-z", "--maxz"),    action="store", type="integer", default=20, help="Maximum number of bands for band file [default is 20]"),
-  make_option(c("-m", "--minb"),    action="store", type="integer", help="Band ID of lowest elevation band"),
+  make_option(c("-m", "--minb"),    action="store", type="integer", default=100, help="Band ID of lowest elevation band"),
   make_option(c("-n", "--nullg"),   action="store_true", default=FALSE, help="Add null glaciers to elevation bands missing glacier HRUs and add blank bottom elevation band for each cell"),
   make_option(c("-S", "--save"),    action="store_true", default=FALSE, help="Save results to *.RData file")
 )
@@ -70,13 +70,13 @@ if(!is.null(opt$basin)){
 #Subset main data frame if required; be flexible with celldf column names
 if(!is.null(opt$basin)){
   cell_map <- e[[opt$celldf]]
-  hdrs <- names(cell_map)
-  nind <- match(c("name","names","NAME","NAMES","basin","BASIN", "basins","BASINS"),hdrs)
-  rind <- which(cell_map[[nind]]==opt$basin)
-  if(length(rind)==0) stop(paste("Sub-basin '", opt$basin, "' could not be found in supplied data frame.", sep=""))
-  cind <- match(c("cellid","cell_id","CELLID","CELL_ID"), hdrs)
-  cells <- cell_map[[cind]][rind]
-  inFrame <- do.call(rbind, lapply(cells, function(x, dfy, ci){dfy[which(dfy[[ci]]==x),]}, dfy=e[[opt$hrudf]], ci=cind))
+  nind <- match(c("name","names","NAME","NAMES","basin","BASIN", "basins","BASINS"), names(cell_map))
+  if(!any(cell_map[[nind]]==opt$basin, na.rm = TRUE)) stop(paste("Sub-basin '", opt$basin, "' could not be found in supplied data frame.", sep=""))
+  names(cell_map)[nind] <- "BASIN"   # Update name of Basin column
+  cind <- match(c("cellid","cell_id","CELLID","CELL_ID"), names(cell_map))
+  names(cell_map)[cind] <- "CELL_ID" # Update name of Cell ID column
+  inFrame <- left_join(e[[opt$hrudf]], cell_map, by="CELL_ID") |>
+    filter(BASIN==opt$basin) |> select(CELL_ID,BAND_ID,CLASS,AREA,AREA_FRAC,ELEVATION)
 } else {
   inFrame <- e[[opt$hrudf]]
 }

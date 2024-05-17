@@ -16,16 +16,15 @@ summarizeHRU <- function(x){
   #     area fraction of each band
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  require("plyr")
+  require("tidyverse")
   
-  d1 <- ddply(x, .(CLASS), summarize, AREA=sum(AREA)/1000/1000, ELEV=median(ELEVATION*AREA)/sum(AREA), NO_HRU=length(BAND_ID))
+  d1 <- x |> group_by(CLASS) |> summarise(AREA=sum(AREA)/1000/1000, ELEV=median(ELEVATION*AREA)/sum(AREA), NO_HRU=length(BAND_ID))
   d1$AREA_FRAC <- d1$AREA/sum(d1$AREA)
-  d2 <- ddply(x, .(BAND_ID), summarize, AREA=sum(AREA)/1000/1000, ELEV=median(ELEVATION*AREA)/sum(AREA), NO_HRU=length(CLASS))
+  d2 <- x |> group_by(BAND_ID) |> summarise(AREA=sum(AREA)/1000/1000, ELEV=median(ELEVATION*AREA)/sum(AREA), NO_HRU=length(CLASS))
   d2$AREA_FRAC <- d2$AREA/sum(d2$AREA)
   d2$CUM_AREA_FRAC <- cumsum(d2$AREA_FRAC)
   
   return(list(VEG=d1,ELEV=d2))
-  
 }
 
 
@@ -48,9 +47,9 @@ summarizeHRUbyCell <- function(x){
   # NO_HRU -    Number of HRUs in each cell
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  require("plyr")
+  require("tidyverse")
   
-  d1 <- ddply(x, .(CELL_ID), summarize,
+  d1 <- x |> group_by(CELL_ID) |> summarise(
               AREA=sum(AREA),
               ELEV=mean(ELEVATION),
               NO_CLASS = length(unique(CLASS)),
@@ -58,7 +57,6 @@ summarizeHRUbyCell <- function(x){
               NO_HRU=length(CLASS))
   
   return(d1)
-  
 }
 
 ###########################################################################################################
@@ -79,7 +77,7 @@ statsHRU <- function(hru_df,
   # Function always prints descriptive statistics to stdout
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
-  require("plyr")
+  require("tidyverse")
   
   if (qc) {
     #Check for elelvation errors
@@ -88,20 +86,20 @@ statsHRU <- function(hru_df,
   }
   
   #Calculate and print statistics
-  cat("         Minimum elevation (m):", round(min(hru_df$ELEVATION)), "\n",
-      "        Maximum elevation (m):", round(max(hru_df$ELEVATION)), "\n",
-      "              Minimum band ID:", min(hru_df$BAND_ID), "\n",
-      "              Maximum band ID:", max(hru_df$BAND_ID), "\n",
-      "  Maximum cell band range (m):", max(ddply(hru_df, .(CELL_ID), summarize, range=max(BAND_ID)-min(BAND_ID))$range), "\n",
-      "            Total area (km^2):", round(sum(hru_df$AREA)/1000/1000,2), "\n",
-      "              Number of cells:", length(unique(hru_df$CELL_ID)), "\n",
-      "     Average cell area (km^2):", round(sum(hru_df$AREA)/length(unique(hru_df$CELL_ID))/1000/1000,2), "\n",
-      "            Number of classes:", length(unique(hru_df$CLASS)), "\n",
-      "               Number of HRUs:", length(hru_df$CELL_ID), "\n",
-      " Mean number of HRUs per cell:", round(length(hru_df$CELL_ID)/length(unique(hru_df$CELL_ID)),1), "\n",
-      "  Min number of HRUs per cell:", min(ddply(hru_df, .(CELL_ID), summarize, count=length(CLASS))$count), "\n",
-      "  Max number of HRUs per cell:", max(ddply(hru_df, .(CELL_ID), summarize, count=length(CLASS))$count), "\n", sep=" ")
+  cat("             Minimum elevation (m):", round(min(hru_df$ELEVATION)), "\n",
+      "            Maximum elevation (m):", round(max(hru_df$ELEVATION)), "\n",
+      "                  Minimum band ID:", min(hru_df$BAND_ID), "\n",
+      "                  Maximum band ID:", max(hru_df$BAND_ID), "\n",
+      "      Maximum cell band range (m):", max((hru_df |> group_by(CELL_ID) |> summarise(range=max(BAND_ID)-min(BAND_ID)))$range), "\n",
+      "                Total area (km^2):", round(sum(hru_df$AREA)/1000/1000,2), "\n",
+      "                  Number of cells:", length(unique(hru_df$CELL_ID)), "\n",
+      "         Average cell area (km^2):", round(sum(hru_df$AREA)/length(unique(hru_df$CELL_ID))/1000/1000,2), "\n",
+      "                Number of classes:", length(unique(hru_df$CLASS)), "\n",
+      "                   Number of HRUs:", length(hru_df$CELL_ID), "\n",
+      "     Mean number of HRUs per cell:", round(length(hru_df$CELL_ID)/length(unique(hru_df$CELL_ID)),1), "\n",
+      "      Min number of HRUs per cell:", min((hru_df |> group_by(CELL_ID) |> summarise(count=length(CLASS)))$count), "\n",
+      "      Max number of HRUs per cell:", max((hru_df |> group_by(CELL_ID) |> summarise(count=length(CLASS)))$count), "\n", 
+      "Effective model resolution (km^2):", round(sum(hru_df$AREA)/1000/1000,2) / length(hru_df$CELL_ID), "\n", sep=" ")
   
   if (qc) return(hru_df) else return(NULL)
-  
 }

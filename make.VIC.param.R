@@ -52,7 +52,8 @@ make.VIC.param <- function(hru_df,
   #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   ## Load dependencies
-  require("plyr")
+  require("tidyverse")
+  require("progress")
   
   ## Initialize variables
   out_list <- NULL     #Function return value as list output
@@ -65,30 +66,22 @@ make.VIC.param <- function(hru_df,
   bparams <- NULL      #Matrix of band parameter records for a given cell
   slevel <- NULL       #Track sea-level flag for each cell
   
-  ## Internal function(s) ##################
-  find.cell.area <- function(cellid,
-                             area_df){
-    ii <- which(area_df$CELL_ID == cellid)
-    return(area_df$CELL_AREA[ii]) }
-  ##########################################
-  
   ## Pre-process hru data ###
   hru_df <- arrange(hru_df, CELL_ID, BAND_ID, CLASS)  #Ensure data frame is sorted
   cells <- unique(hru_df$CELL_ID) #vector of unique cell IDs
   no_cells <- length(cells)
-  # calculate cell area
-  if(is.na(match("AREA_FRAC", names(hru_df)))){
-    cell_area_df <- ddply(hru_df, .(CELL_ID), summarise, CELL_AREA=sum(AREA))
-    area_vector <- sapply(hru_df$CELL_ID, find.cell.area, cell_area_df)
-    hru_df$AREA_FRAC <- hru_df$AREA/area_vector
-  }
+
   # summary by cell and elevation band
-  band_df <- ddply(hru_df, .(CELL_ID, BAND_ID), summarise, AREA_FRAC=sum(AREA_FRAC),
-                   ELEVATION=mean(ELEVATION)) 
+  band_df <- hru_df |> group_by(CELL_ID, BAND_ID) |>
+    summarise(AREA_FRAC=sum(AREA_FRAC), ELEVATION=mean(ELEVATION))
   
   ## Loop through individual cells
+  pb <- progress_bar$new(
+    format = "Summarising cells [:bar] :percent eta: :eta",
+    total=length(cells))
+  
   for (cell in cells){
-    
+
     #Initialize sea-level flag
     sea_level = FALSE
     
@@ -177,6 +170,9 @@ make.VIC.param <- function(hru_df,
     bnd <- NULL
     slevel <- c(slevel, sea_level)
     
+    pb$tick()
+    Sys.sleep(1/1000)
+    
   } #Cell Loop
   
   ## Generate output list
@@ -186,6 +182,11 @@ make.VIC.param <- function(hru_df,
   ## Write HRU parameters to VIC-formatted file
   if (!is.null(vpf_filename)) {
     vpf_file <- file(description = vpf_filename, open="w")
+    
+    pb2 <- progress_bar$new(
+      format = "Writing VPF [:bar] :percent eta: :eta",
+      total=no_cells)
+    
     for (x in 1:no_cells){
       txt_hdr <- sprintf(c("%.0f","%5.0f"), c(out_list$CELL_ID[x], out_list$NO_HRU[x]))
       write(txt_hdr, file=vpf_file, ncolumns=2)
@@ -194,6 +195,8 @@ make.VIC.param <- function(hru_df,
                       out_list$VPARAM[[x]][y,])
         write(txt_par, file=vpf_file, ncolumns=9)
       }
+      pb2$tick()
+      Sys.sleep(1/1000)
     }
     close(vpf_file)
   }
@@ -202,6 +205,11 @@ make.VIC.param <- function(hru_df,
   ## null_glaciers = TRUE and lowest elevation band not already at sea level (SEA_LEVEL=FALSE)
   if (!is.null(snb_filename)) {
     band_file <- file(description = snb_filename, open="w")
+    
+    pb3 <- progress_bar$new(
+      format = "Writing SPF [:bar] :percent eta: :eta",
+      total=no_cells)
+    
     for (x in 1:no_cells){
       #Formatted text for cell ID, band area fraction, elevation; pad with zeros to max_bands
       n_padded_bands <- max_bands - out_list$NO_BANDS[x]
@@ -216,10 +224,10 @@ make.VIC.param <- function(hru_df,
         txt_elev <- sprintf("%5.0f", c(out_list$BAND[[x]][,1], rep(0, n_padded_bands)))
       }
       write(c(sprintf("%5.0f", out_list$CELL_ID[x]), txt_af, txt_elev), file=band_file, ncolumns=2*max_bands+1)
+      pb3$tick()
+      Sys.sleep(1/1000)
     }
     close(band_file)
   }
-  
   return(out_list)
-  
 }

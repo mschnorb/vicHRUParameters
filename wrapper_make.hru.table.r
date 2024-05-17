@@ -27,8 +27,7 @@
 
 #Parse arguments
 library('optparse')
-library('raster')
-library('sf')
+library('terra')
 
 #Parse arguments
 CELLMAP <- TRUE
@@ -66,10 +65,10 @@ if(is.null(opt$rfile)) {
 source("make.hru.table.R")
 
 #Load data
-rdem <- raster(opt$dfile)
-rveg <- raster(opt$vfile)
-bpoly <- read_sf(opt$bfile)
-spoly <- read_sf(opt$sfile)
+rdem <- rast(opt$dfile)
+rveg <- rast(opt$vfile)
+bpoly <- vect(opt$bfile)
+spoly <- vect(opt$sfile)
 if(CELLMAP) cell_map <- read.table(opt$cfile, header=TRUE, stringsAsFactors=FALSE, sep=",")
 if(RDEPTH)  root_depth <- read.table(opt$rfile, header=TRUE, stringsAsFactors=FALSE, sep=",")
 if(CELLMAP & RDEPTH) opt$save <- TRUE
@@ -78,8 +77,8 @@ if(CELLMAP & RDEPTH) opt$save <- TRUE
 rlf=200
 
 #Any basin polygon pre-processing code goes here
-#bsub <- bploy
-bsub <- dplyr::filter(bpoly, ID==20)
+#bsub <- bpoly
+bsub <- subset(bpoly, bpoly$BASIN=="DEANA")
 
 #Construct HRU table
 result <- tryCatch({

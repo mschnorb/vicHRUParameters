@@ -58,7 +58,7 @@ make.hru.table <- function(rdem,
   minr <- plyr::round_any(mmx[1], relief, f = floor)
   maxr <- plyr::round_any(mmx[2], relief, f = ceiling)
   rclmat <- matrix(c(seq(minr, maxr-relief, relief), seq(minr+relief, maxr, relief), seq(minr+relief/2, maxr-relief/2, relief)), ncol=3)
-  rdem_rcl <- classify(rdem_p, rclmat)
+  rdem_rcl <- classify(rdem_p, rclmat, right=FALSE)
   
   #Create HRU table
   cat(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), " ... creating table from matched pixels \n")
