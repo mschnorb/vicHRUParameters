@@ -42,7 +42,7 @@ make.hru.table <- function(rdem,
     rcvr_p <- rcvr_c
   } else {
     rref <- rdem_c
-    rcvr_p <- project(rcvr_c, rref)
+    rcvr_p <- project(rcvr_c, rref, "near")
     rdem_p <- rdem_c
   }
   soil_poly <- project(ssub, crs(rref))

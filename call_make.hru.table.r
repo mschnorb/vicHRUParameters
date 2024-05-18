@@ -61,6 +61,7 @@ call_make.hru.table <- function(ply_file,
 
   #Parameters
   rlf=200
+  cvref <- FALSE
 
   #Any basin polygon pre-processing code goes here
   bsub <- bpoly
@@ -68,7 +69,7 @@ call_make.hru.table <- function(ply_file,
 
   #Construct HRU table
   result <- tryCatch({
-    hru_table <- make.hru.table(rdem, rveg, spoly, bsub, relief=rlf)
+    hru_table <- make.hru.table(rdem, rveg, spoly, bsub, relief=rlf, cvr.ref = cvref)
     write.table(hru_table, file=file.path(outdir,"hru_data.txt"), row.names=FALSE, sep=",", quote=FALSE)
     if(save) save(hru_table, cell_map, root_depth, file=file.path(outdir,"hru_data.RData"))
     rslt <- TRUE
